@@ -34,7 +34,8 @@ from datetime import datetime, timezone
 
 HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parent
-ROOT = "/workspace/swift-teal-stoat"
+ROOT = os.environ.get("TRYON_ROOT",
+        str(pathlib.Path(__file__).resolve().parent.parent / "runs"))
 
 
 def ssh(host: str, port: str, key: str, cmd: str, timeout: int = 3600) -> str:

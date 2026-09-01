@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" width="900" height="300" role="img" aria-label="Measured benchmark: 172 generations, 9.4 s mean, 57 of 57 anatomy pass">
+  <rect width="900" height="300" rx="10" fill="#fbfbfd" stroke="#d8dee9"/>
+  <g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif">
+    <text x="28" y="38" font-size="19" font-weight="600" fill="#11151c">The measured run</text>
+    <text x="28" y="59" font-size="13" fill="#6b7484">7 women &#215; 23 womenswear + 1 man &#215; 11 menswear, one RTX 4090, seed 42 throughout</text>
+
+    <!-- panel 1: throughput -->
+    <rect x="28" y="82" width="270" height="186" rx="8" fill="#fff" stroke="#d8dee9"/>
+    <text x="48" y="107" font-size="12" font-weight="600" fill="#6b7484">THROUGHPUT</text>
+    <text x="48" y="152" font-size="42" font-weight="600" fill="#11151c">172</text>
+    <text x="48" y="174" font-size="13" fill="#3d4757">generations, end to end</text>
+    <line x1="48" y1="192" x2="278" y2="192" stroke="#e6eaf0"/>
+    <text x="48" y="216" font-size="24" font-weight="600" fill="#11151c">26.9 min</text>
+    <text x="48" y="236" font-size="12" fill="#6b7484">total GPU time</text>
+    <text x="48" y="256" font-size="12" fill="#6b7484">= 9.4 s &#215; 172, no batching</text>
+
+    <!-- panel 2: latency range -->
+    <rect x="316" y="82" width="270" height="186" rx="8" fill="#fff" stroke="#d8dee9"/>
+    <text x="336" y="107" font-size="12" font-weight="600" fill="#6b7484">PER-IMAGE LATENCY</text>
+    <text x="336" y="152" font-size="42" font-weight="600" fill="#11151c">9.4 s</text>
+    <text x="336" y="174" font-size="13" fill="#3d4757">mean of 172</text>
+    <!-- range bar -->
+    <line x1="336" y1="206" x2="566" y2="206" stroke="#e6eaf0" stroke-width="8" stroke-linecap="round"/>
+    <line x1="352" y1="206" x2="530" y2="206" stroke="#6ea8fe" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="441" cy="206" r="7" fill="#2f6a2b" stroke="#fff" stroke-width="2"/>
+    <text x="336" y="232" font-size="11" fill="#6b7484">9.0 s</text>
+    <text x="441" y="232" font-size="11" fill="#2f6a2b" text-anchor="middle" font-weight="600">mean 9.4</text>
+    <text x="566" y="232" font-size="11" fill="#6b7484" text-anchor="end">9.8 s</text>
+    <text x="336" y="256" font-size="12" fill="#6b7484">0.8 s spread across the whole run</text>
+
+    <!-- panel 3: QA -->
+    <rect x="604" y="82" width="268" height="186" rx="8" fill="#fff" stroke="#d8dee9"/>
+    <text x="624" y="107" font-size="12" font-weight="600" fill="#6b7484">ANATOMY AUDIT (VLM-GRADED)</text>
+    <text x="624" y="152" font-size="42" font-weight="600" fill="#2f6a2b">57</text>
+    <text x="686" y="152" font-size="20" fill="#6b7484">/ 57 pass</text>
+    <text x="624" y="174" font-size="13" fill="#3d4757">hands, arms, eyes, face</text>
+    <line x1="624" y1="192" x2="852" y2="192" stroke="#e6eaf0"/>
+    <g>
+      <rect x="624" y="206" width="228" height="12" rx="6" fill="#e0a44a"/>
+      <rect x="624" y="206" width="212" height="12" rx="6" fill="#5aa055"/>
+    </g>
+    <text x="624" y="240" font-size="12" fill="#3d4757">53 passed first time</text>
+    <text x="624" y="258" font-size="12" fill="#b4531a">4 needed one regeneration</text>
+
+    <text x="28" y="290" font-size="10" fill="#8a93a3">Every figure is measured, not estimated. Regenerate them from a run manifest with reporting/build_benchmark.py.</text>
+  </g>
+</svg>

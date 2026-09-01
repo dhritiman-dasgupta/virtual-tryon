@@ -9,7 +9,7 @@
 set -uo pipefail
 : "${HOST:?set HOST}" ; : "${PORT:?set PORT}"
 KEY=${KEY:-~/.ssh/id_ed25519}
-ROOT=${ROOT:-/workspace/swift-teal-stoat}
+ROOT=${ROOT:-${TRYON_ROOT:-/workspace/tryon}}
 
 if ! ssh -o ConnectTimeout=10 -o BatchMode=yes -o StrictHostKeyChecking=accept-new \
         -p "$PORT" -i "$KEY" "root@$HOST" true 2>/dev/null; then

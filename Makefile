@@ -1,3 +1,5 @@
+TRYON_ROOT ?= /workspace/tryon
+
 .DEFAULT_GOAL := help
 COMFY_ROOT ?= /opt/ComfyUI
 PORT ?= 8000
@@ -51,12 +53,15 @@ sync: ## Push app/, pipeline/ and workflows/ to the box and restart the API
 
 box-setup: ## Rebuild the stack on a bare container (~10 min cold)
 	ssh -p $(PORT) -i ~/.ssh/id_ed25519 root@$(HOST) \
-	  'cd /workspace/swift-teal-stoat && bash setup.sh'
+	  'cd $(TRYON_ROOT) && bash setup.sh'
 
 # --- reporting ---------------------------------------------------------------
 
 benchmark: ## Rebuild the benchmark PDF and workbook from the run reports
 	python3 reporting/build_benchmark.py --r5 data/runs-5090 --r4 data/runs-4090 --out docs
+
+showcase: ## Build the visual showcase end to end (NEEDS A GPU)
+	bash scripts/build_showcase.sh
 
 gallery: ## Rebuild the model+garment=output gallery (offline and S3)
 	python3 reporting/build_gallery.py --images data/runs-4090/BEST \
@@ -69,7 +74,7 @@ test: ## Run the pipeline tests (no GPU needed)
 
 catalogue: ## Run the full catalogue on the box (HOST/PORT required)
 	ssh -p $(PORT) -i ~/.ssh/id_ed25519 root@$(HOST) \
-	  'cd /workspace/swift-teal-stoat && ./venv/bin/python pipeline/run_catalogue.py \
+	  'cd $(TRYON_ROOT) && ./venv/bin/python pipeline/run_catalogue.py \
 	     --model $(or $(MODEL),f6) --guardrail $(or $(GUARDRAIL),default)'
 
 .PHONY: help install models env serve dev smoke notebook test catalogue connect sync box-setup benchmark gallery docker-build docker-up docker-models docker-logs

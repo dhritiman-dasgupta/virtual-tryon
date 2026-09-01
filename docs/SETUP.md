@@ -135,6 +135,29 @@ Everything is environment-driven; see `.env.example` for the annotated list and
 | `COMFY_EXTRA_ARGS` | *(empty)* | Set `--lowvram` on cards under ~16 GB. |
 | `COMFY_MANAGE` | `true` | `true` = this API spawns and supervises ComfyUI. `false` = attach to one you started. |
 | `JOB_TTL_SECONDS` | `3600` | Jobs are in-memory and expire. Results are not persisted. |
+| `TRYON_ROOT` | `./runs` | Where the batch pipeline reads its inputs and writes runs. Everything under `pipeline/`, `tests/run_suite.py` and the `deploy/` helpers honour it. |
+
+---
+
+## Building the visual showcase
+
+The API, the tests, the diagrams and the benchmark tables all run without a GPU.
+Generating **images** does not — that is the one GPU-gated step:
+
+```bash
+SUBJECTS=/path/to/person/photos \
+GARMENTS=/path/to/flat/garment/photos \
+make showcase
+```
+
+It catalogues every photograph with the vision model, generates every
+subject × garment pair through the anatomy QA loop, and writes
+`docs/gallery/gallery.html`. It refuses to start — with a specific message —
+if there is no GPU, no inputs, or the backend is not answering `/readyz`, so it
+never half-produces a gallery.
+
+This repository ships no imagery of people and no stand-in results, so there is
+nothing to regenerate *from*: supply your own subjects.
 
 ---
 

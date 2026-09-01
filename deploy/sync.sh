@@ -8,7 +8,7 @@
 set -euo pipefail
 : "${HOST:?set HOST}" ; : "${PORT:?set PORT}"
 KEY=${KEY:-~/.ssh/id_ed25519}
-ROOT=${ROOT:-/workspace/swift-teal-stoat}
+ROOT=${ROOT:-${TRYON_ROOT:-/workspace/tryon}}
 HERE=$(cd "$(dirname "$0")/.." && pwd)
 
 ssh -p "$PORT" -i "$KEY" "root@$HOST" "mkdir -p $ROOT/{pipeline,app,workflows,pairs,logs}"

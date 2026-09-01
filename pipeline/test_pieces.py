@@ -16,6 +16,7 @@ Same seed both times, so any difference is the prompt and not the noise.
 usage: test_pieces.py --model f6 --garments fg01,fg06,fg16
 """
 from __future__ import annotations
+import os
 
 import argparse
 import json
@@ -38,7 +39,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s",
 logging.getLogger("httpx").setLevel(logging.WARNING)
 log = logging.getLogger("pieces")
 
-ROOT = Path("/workspace/swift-teal-stoat")
+ROOT = Path(os.environ.get("TRYON_ROOT", Path(__file__).resolve().parent.parent / "runs"))
 API = "http://127.0.0.1:8000"
 
 

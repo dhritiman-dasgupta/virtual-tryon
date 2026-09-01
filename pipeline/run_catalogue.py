@@ -15,6 +15,7 @@ against a stub server, so the code is proven before it costs GPU time.
     run_catalogue.py --garments fg01,fg06 --dry-run # no API calls at all
 """
 from __future__ import annotations
+import os
 
 import argparse
 import json
@@ -81,7 +82,7 @@ def generate_one(client: httpx.Client, person: Path, garment: Path, prompt: str,
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--api", default="http://127.0.0.1:8000")
-    ap.add_argument("--root", default="/workspace/swift-teal-stoat")
+    ap.add_argument("--root", default=os.environ.get("TRYON_ROOT", "./runs"))
     ap.add_argument("--model", default="f6")
     ap.add_argument("--garments", default="")
     ap.add_argument("--guardrail", choices=["on", "off", "default"],

@@ -2,7 +2,7 @@
 # Bring the box back after a stop. One command, or set it as the instance's
 # startup command and it needs nothing at all:
 #
-#     bash /workspace/swift-teal-stoat/bootstrap.sh
+#     bash ${TRYON_ROOT:-/workspace/tryon}/bootstrap.sh
 #
 # /workspace persists across a stop; the container filesystem does not. So the
 # SSH key, the tunnel credentials and the models all live on the volume and are
@@ -13,7 +13,7 @@
 # the page each session. This one is always https://tryon.example.com.
 set -uo pipefail
 
-ROOT=${ROOT:-/workspace/swift-teal-stoat}
+ROOT=${ROOT:-${TRYON_ROOT:-/workspace/tryon}}
 cd "$ROOT" 2>/dev/null || { echo "no $ROOT - volume is empty"; exit 1; }
 mkdir -p logs
 export HF_HOME=$ROOT/hf-cache

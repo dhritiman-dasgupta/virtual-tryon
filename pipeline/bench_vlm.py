@@ -13,6 +13,7 @@ So every candidate is scored on three known cases as well as on tokens/sec:
 usage: bench_vlm.py --models Qwen/Qwen3-VL-4B-Instruct:bf16 Qwen/Qwen3-VL-8B-Instruct:4bit
 """
 from __future__ import annotations
+import os
 
 import argparse
 import json
@@ -27,7 +28,7 @@ from app.guardrail import COMBINED_ASK, COMBINED_CHECKS, COMBINED_FIELDS, _faile
 from app.vision import LocalVision, parse
 
 logging.basicConfig(level=logging.WARNING)
-ROOT = Path("/workspace/swift-teal-stoat")
+ROOT = Path(os.environ.get("TRYON_ROOT", Path(__file__).resolve().parent.parent / "runs"))
 
 
 def cases() -> list[dict]:

@@ -3,7 +3,7 @@
 # currently authorised onto the persistent volume so bootstrap.sh can restore
 # them after every stop.
 set -euo pipefail
-ROOT=${ROOT:-/workspace/swift-teal-stoat}
+ROOT=${ROOT:-${TRYON_ROOT:-/workspace/tryon}}
 mkdir -p "$ROOT"
 cp /root/.ssh/authorized_keys "$ROOT/authorized_keys"
 chmod 600 "$ROOT/authorized_keys"

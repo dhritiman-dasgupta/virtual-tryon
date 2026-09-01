@@ -24,10 +24,16 @@ the QA harness used to run and grade it at scale.
 The subject keeps their face, pose, framing and background; the garment keeps
 its embroidery, drape and colourway.
 
-> **No sample imagery is published in this repository.** The original benchmark
-> ran against photographs of real people, and those are not redistributed here.
-> A gallery built from synthetic subjects is pending — `gallery-tools/` and
-> `reporting/build_gallery.py` regenerate it from any run you produce yourself.
+![Try-on request pipeline](docs/assets/pipeline.svg)
+
+> **No imagery of people is published in this repository, by design.** The
+> original benchmark ran against photographs of real people and those are not
+> redistributed. Nor are example outputs faked to fill the gap: every figure and
+> diagram here is either measured or schematic, and clearly one or the other.
+>
+> To produce a visual gallery, point the pipeline at subjects of your own and run
+> **`make showcase`** — it catalogues, generates and builds a browsable page in
+> one command. That is the only step in this repository that needs a GPU.
 
 ---
 
@@ -45,8 +51,10 @@ womenswear, 1 man × 11 menswear:
 | Total GPU time | **26.9 min** on a single RTX 4090 |
 | Anatomy audit | 57 images graded by a VLM — **57 pass**, 4 needed one regeneration |
 
-Rebuild those numbers yourself with `reporting/build_benchmark.py`; the lookbook
-in `docs/` is generated from the same run manifest.
+![Measured run: 172 generations, 9.4 s mean, 57 of 57 anatomy pass](docs/assets/benchmark.svg)
+
+Rebuild these numbers yourself with `reporting/build_benchmark.py`, which reads
+the run manifest rather than any hand-typed figure.
 
 ---
 
@@ -286,6 +294,7 @@ web/index.html            minimal browser client for the API
 scripts/
   install.sh              ComfyUI + ComfyUI-GGUF + deps
   download_models.sh      weights, with size verification
+  build_showcase.sh       subjects -> catalogue -> matrix -> gallery (needs a GPU)
   hash_password.py make_notebook.py
 
 deploy/                   provisioning, sync and tunnel helpers for a GPU box
@@ -297,6 +306,7 @@ tests/
 docs/
   SETUP.md                install, configure, run, troubleshoot
   ARCHITECTURE.md         production architecture notes
+  assets/                 the pipeline diagram and the measured-run chart
 gallery-tools/            builds a browsable gallery from a run you generate
 ```
 
@@ -332,4 +342,7 @@ covered by it**:
 This repository ships **no photographs of people**. The 172-generation benchmark
 quoted above was run against photographs of real individuals; those images and
 the results derived from them are deliberately not published here. Point the
-pipeline at your own inputs, or at synthetic subjects, to reproduce the numbers.
+pipeline at your own inputs, or at synthetic subjects, to reproduce the numbers:
+`make showcase` runs the whole chain and writes a browsable gallery of results
+you generated yourself. No example output in this repository is fabricated to
+stand in for one.

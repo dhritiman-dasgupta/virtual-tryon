@@ -7,7 +7,7 @@
 # ComfyUI, pushed the 9.7 GB UNet into offload, and turned an 8 s generation
 # into 215 s. Keep the VLM at 4-bit and the reserve at 4.0.
 set -euo pipefail
-ROOT=${ROOT:-/workspace/swift-teal-stoat}
+ROOT=${ROOT:-${TRYON_ROOT:-/workspace/tryon}}
 cd "$ROOT"
 
 export COMFY_ROOT=$ROOT/ComfyUI

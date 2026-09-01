@@ -7,9 +7,10 @@ Run it twice with different --model and diff the JSON.
 
 usage:
     qa_sweep.py --model Qwen/Qwen3-VL-8B-Instruct --quant bf16 \
-                --results /workspace/swift-teal-stoat/outputs/f6 --out sweep_8b.json
+                --results $TRYON_ROOT/outputs/f6 --out sweep_8b.json
 """
 from __future__ import annotations
+import os
 
 import argparse
 import json
@@ -24,7 +25,7 @@ from app.guardrail import COMBINED_ASK, COMBINED_CHECKS, COMBINED_FIELDS, _faile
 from app.vision import LocalVision, parse
 
 logging.basicConfig(level=logging.WARNING)
-ROOT = Path("/workspace/swift-teal-stoat")
+ROOT = Path(os.environ.get("TRYON_ROOT", Path(__file__).resolve().parent.parent / "runs"))
 
 
 def main() -> int:

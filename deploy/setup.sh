@@ -9,7 +9,7 @@
 # minutes if /workspace still has the models.
 set -euo pipefail
 
-ROOT=${ROOT:-/workspace/swift-teal-stoat}
+ROOT=${ROOT:-${TRYON_ROOT:-/workspace/tryon}}
 VENV=$ROOT/venv
 LOG=$ROOT/logs
 mkdir -p "$ROOT" "$LOG" "$ROOT/hf-cache" "$ROOT/models"/{unet,text_encoders,vae,loras}
@@ -30,7 +30,7 @@ say "creating venv"
 # CPU-bound pip installs below.
 cat > "$ROOT/pull_models.sh" <<'PULL'
 set -euo pipefail
-ROOT=${ROOT:-/workspace/swift-teal-stoat}
+ROOT=${ROOT:-${TRYON_ROOT:-/workspace/tryon}}
 export HF_HOME=$ROOT/hf-cache HF_HUB_ENABLE_HF_TRANSFER=1
 HF=$ROOT/venv/bin/hf
 $HF download unsloth/FLUX.2-klein-9B-GGUF flux-2-klein-9b-Q8_0.gguf \
@@ -73,7 +73,7 @@ say "cloning ComfyUI"
 # earlier startswith("torch") also stripped torchsde, which ComfyUI needs.
 "$VENV/bin/python" - <<'PY'
 import re, pathlib, os
-root = os.environ.get("ROOT", "/workspace/swift-teal-stoat")
+root = os.environ.get("ROOT", "${TRYON_ROOT:-/workspace/tryon}")
 src = pathlib.Path(root) / "ComfyUI/requirements.txt"
 held = {"torch", "torchvision", "torchaudio"}
 keep = [l for l in src.read_text().splitlines()

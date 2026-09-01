@@ -10,6 +10,7 @@ usage:
     run_guarded.py --model f6 --limit 3 --max-attempts 2
 """
 from __future__ import annotations
+import os
 
 import argparse
 import json
@@ -34,7 +35,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)-8s %(message
 logging.getLogger("httpx").setLevel(logging.WARNING)
 log = logging.getLogger("run")
 
-ROOT = Path("/workspace/swift-teal-stoat")
+ROOT = Path(os.environ.get("TRYON_ROOT", Path(__file__).resolve().parent.parent / "runs"))
 API = "http://127.0.0.1:8000"
 
 

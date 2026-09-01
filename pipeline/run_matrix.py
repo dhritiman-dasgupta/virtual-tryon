@@ -1,4 +1,4 @@
-#!/opt/venv/bin/python
+#!/usr/bin/env python3
 """Full try-on pipeline with an anatomical QA loop.
 
     1  VLM reads every model photo (scene, pose, per-hand, build, face) and
@@ -15,17 +15,22 @@ usage: pipeline2.py [--models "model  (3)"] [--rounds 2] [--steps 5] [--mp 0.75]
 """
 import argparse, gc, json, pathlib, re, subprocess, time
 
-SET   = pathlib.Path("/workspace/set2")
-OUT   = pathlib.Path("/workspace/final_out"); OUT.mkdir(exist_ok=True)
-REJ   = OUT / "rejected"; REJ.mkdir(exist_ok=True)
-CAT   = pathlib.Path("/workspace/catalogue_final.json")
-VLM   = "Qwen/Qwen2.5-VL-7B-Instruct"
-API   = "http://127.0.0.1:8000"
+import os, sys
 
-import sys
-sys.path.insert(0, "/workspace")
-from prompt_v7 import MODEL_ASK, GARMENT_ASK, MODEL_FIELDS, GARMENT_FIELDS, build
-from guardrail import VERIFY_ASK, VERIFY_FIELDS, verdict
+# Every path is environment-driven so this runs outside the box it was written on.
+REPO  = pathlib.Path(__file__).resolve().parent.parent
+ROOT  = pathlib.Path(os.environ.get("TRYON_ROOT", REPO / "runs"))
+SET   = pathlib.Path(os.environ.get("TRYON_SET", ROOT / "set"))
+OUT   = pathlib.Path(os.environ.get("TRYON_OUT", ROOT / "final_out")); OUT.mkdir(parents=True, exist_ok=True)
+REJ   = OUT / "rejected"; REJ.mkdir(parents=True, exist_ok=True)
+CAT   = pathlib.Path(os.environ.get("TRYON_CATALOGUE", ROOT / "catalogue_final.json"))
+HFC   = os.environ.get("HF_HOME") or str(ROOT / ".hfcache")
+VLM   = os.environ.get("TRYON_VLM", "Qwen/Qwen2.5-VL-7B-Instruct")
+API   = os.environ.get("TRYON_API", "http://127.0.0.1:8000")
+
+sys.path.insert(0, str(REPO))
+from app.person_prompt import MODEL_ASK, GARMENT_ASK, MODEL_FIELDS, GARMENT_FIELDS, build
+from app.guardrail import VERIFY_ASK, VERIFY_FIELDS, verdict
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--models", nargs="*", default=None)
@@ -52,8 +57,8 @@ def api(up: bool):
     """ComfyUI keeps its weights resident, so it must be down for VLM work."""
     if up:
         subprocess.run(["tmux", "new-session", "-d", "-s", "tryon",
-            "cd /workspace/virtual-tryon && PYTHONPATH=. /opt/venv/bin/python -m "
-            "uvicorn app.main:app --host 0.0.0.0 --port 8000 2>&1 | tee /workspace/api.log"],
+            f"cd {REPO} && PYTHONPATH=. {sys.executable} -m "
+            f"uvicorn app.main:app --host 0.0.0.0 --port 8000 2>&1 | tee {ROOT}/api.log"],
             check=False)
         import urllib.request
         for _ in range(180):
@@ -84,9 +89,9 @@ class Vision:
         import torch
         from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
         self.torch = torch
-        self.proc = AutoProcessor.from_pretrained(VLM, cache_dir="/workspace/.hfcache")
+        self.proc = AutoProcessor.from_pretrained(VLM, cache_dir=HFC)
         self.m = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-            VLM, dtype=torch.bfloat16, device_map="cuda:0", cache_dir="/workspace/.hfcache")
+            VLM, dtype=torch.bfloat16, device_map="cuda:0", cache_dir=HFC)
         return self
     def ask(self, img, prompt, mx=900):
         from qwen_vl_utils import process_vision_info

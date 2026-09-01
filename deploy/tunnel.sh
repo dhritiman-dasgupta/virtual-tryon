@@ -9,7 +9,7 @@
 # several restarts before this existed. The log is truncated first so the URL
 # grep cannot return a dead one from a previous session.
 set -uo pipefail
-ROOT=${ROOT:-/workspace/swift-teal-stoat}
+ROOT=${ROOT:-${TRYON_ROOT:-/workspace/tryon}}
 cd "$ROOT"
 
 if [ ! -x ./cloudflared ]; then
