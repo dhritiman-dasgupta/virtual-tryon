@@ -1,0 +1,31 @@
+# --- python ---
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# --- secrets ---
+.env
+
+# --- generated output ---
+outputs/
+data/runs-*
+data/pair-*
+data/source-*
+
+# Generated imagery must not be committed by accident: a run writes thousands
+# of frames. The published gallery under docs/ is the deliberate exception and
+# is re-included below.
+*.png
+*.jpg
+*.jpeg
+*.xlsx
+*.pdf
+
+# --- the published lookbook (deliberately committed) ---
+!docs/**
+!docs/assets/**
+!docs/demo/**
+
+# --- os noise ---
+.DS_Store

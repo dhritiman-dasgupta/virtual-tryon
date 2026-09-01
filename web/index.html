@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Try-On</title><style>
+:root{--bg:#0f1115;--card:#171a20;--line:#252a33;--tx:#e8ecf2;--dim:#9aa3b2;
+      --accent:#6ea8fe;--ok:#4ade80;--bad:#ff6b6b;--warn:#f0b429}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);
+  font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{padding:16px 24px;border-bottom:1px solid var(--line);display:flex;
+  align-items:center;gap:14px;flex-wrap:wrap}
+h1{margin:0;font-size:17px;letter-spacing:-.01em}
+.spacer{flex:1}
+.pill{font-size:11px;border:1px solid var(--line);border-radius:20px;
+  padding:3px 11px;color:var(--dim)}
+.pill.ok{color:var(--ok);border-color:var(--ok)}
+.pill.bad{color:var(--bad);border-color:var(--bad)}
+nav{display:flex;gap:4px;padding:0 24px;border-bottom:1px solid var(--line)}
+nav button{background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--dim);padding:12px 16px;font:inherit;cursor:pointer}
+nav button.on{color:var(--tx);border-bottom-color:var(--accent)}
+main{max-width:1220px;margin:0 auto;padding:22px 24px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:20px;margin-bottom:16px}
+h2{margin:0 0 4px;font-size:15px}
+.hint{font-size:12px;color:var(--dim);margin:0 0 16px;max-width:760px}
+label{display:block;font-size:12px;color:var(--dim);margin:0 0 6px}
+input[type=text],input[type=password],input[type=url],select{width:100%;
+  padding:10px 12px;background:#0b0d10;color:var(--tx);border:1px solid var(--line);
+  border-radius:8px;font:inherit;font-size:14px}
+input[type=file]{width:100%;padding:9px;background:#0b0d10;color:var(--dim);
+  border:1px dashed var(--line);border-radius:8px;font-size:13px}
+.field{margin-bottom:14px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+button.go{background:var(--accent);color:#0b1020;border:0;border-radius:8px;
+  padding:11px 20px;font:inherit;font-weight:600;cursor:pointer}
+button.go:disabled{opacity:.5;cursor:not-allowed}
+button.ghost{background:transparent;color:var(--dim);border:1px solid var(--line);
+  border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+.err{color:var(--bad);font-size:13px;margin-top:10px;min-height:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px}
+.tile{background:#0b0d10;border:1px solid var(--line);border-radius:10px;
+  overflow:hidden;cursor:pointer;position:relative}
+.tile.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.tile img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+.tile .meta{padding:8px 10px;font-size:11px}
+.tile .meta b{display:block;font-size:12px;margin-bottom:2px}
+.tile .meta span{color:var(--dim)}
+.tick{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;
+  background:var(--accent);color:#0b1020;font-size:13px;font-weight:700;
+  display:none;align-items:center;justify-content:center}
+.tile.sel .tick{display:flex}
+.pcs{position:absolute;top:8px;left:8px;background:#000b;border-radius:20px;
+  padding:2px 8px;font-size:10px;color:#dfe4ec}
+.res{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.res .r{background:var(--card);border:1px solid var(--line);border-radius:10px;
+  overflow:hidden}
+.res .r img{width:100%;aspect-ratio:3/4;object-fit:contain;background:#0b0d10;
+  display:block}
+.res .r .cap{padding:8px 11px;font-size:12px}
+.res .r .cap i{font-style:normal;color:var(--dim)}
+.v{font-size:11px} .v.pass{color:var(--ok)} .v.fail{color:var(--bad)}
+.v.none{color:var(--warn)}
+.hidden{display:none}
+#lightbox{position:fixed;inset:0;background:rgba(6,8,11,.94);z-index:100;
+  display:none;align-items:center;justify-content:center;flex-direction:column;
+  gap:14px;padding:26px;cursor:zoom-out}
+#lightbox.on{display:flex}
+#lightbox img{max-width:94vw;max-height:84vh;object-fit:contain;
+  border-radius:8px;box-shadow:0 18px 60px #000a}
+#lbcap{color:var(--dim);font-size:13px;text-align:center}
+#lbcap b{color:var(--tx)}
+.res .r img{cursor:zoom-in}
+#cropstage{position:relative;display:inline-block;max-width:100%;background:#0b0d10;
+  border:1px solid var(--line);border-radius:8px;overflow:hidden;touch-action:none}
+#cropcanvas{display:block;max-width:100%;height:auto}
+#cropbox{position:absolute;border:2px solid var(--accent);cursor:move;
+  box-shadow:0 0 0 9999px rgba(0,0,0,.55)}
+#cropbox i{position:absolute;width:14px;height:14px;background:var(--accent);
+  border-radius:3px}
+#cropbox i[data-h=nw]{left:-7px;top:-7px;cursor:nwse-resize}
+#cropbox i[data-h=ne]{right:-7px;top:-7px;cursor:nesw-resize}
+#cropbox i[data-h=sw]{left:-7px;bottom:-7px;cursor:nesw-resize}
+#cropbox i[data-h=se]{right:-7px;bottom:-7px;cursor:nwse-resize}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid #fff4;
+  border-top-color:#0b1020;border-radius:50%;animation:s .7s linear infinite;
+  vertical-align:-2px;margin-right:7px}
+@keyframes s{to{transform:rotate(360deg)}}
+.bar{height:4px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+@media(max-width:760px){.row,.row3{grid-template-columns:1fr}}
+</style></head><body>
+
+<header>
+  <h1>Try-On</h1>
+  <span class="pill">test platform</span>
+  <span class="spacer"></span>
+  <span id="phase" class="pill">not connected</span>
+  <span id="who" class="pill hidden"></span>
+  <button id="logout" class="ghost hidden" style="padding:4px 11px;font-size:12px">
+    Sign out</button>
+</header>
+
+<nav id="tabs" class="hidden">
+  <button data-tab="lib" class="on">1 &middot; Garment library</button>
+  <button data-tab="gen">2 &middot; Generate</button>
+</nav>
+
+<main>
+
+<!-- ---------------------------------------------------------------- login -->
+<section id="login" class="card" style="max-width:440px;margin:36px auto">
+  <h2>Sign in</h2>
+  <p class="hint">The API address is fixed and does not change when the GPU box
+    restarts. Credentials are filled in for this test platform &mdash; note that
+    anything a browser is given is readable by whoever opens the page, so treat
+    this link as the credential and do not put it anywhere public.</p>
+  <div class="field"><label for="api">API URL</label>
+    <input type="url" id="api" value="https://tryon.example.com"></div>
+  <div class="field"><label for="user">Username</label>
+    <input type="text" id="user" value="demo" autocomplete="username"></div>
+  <div class="field"><label for="pass">Password</label>
+    <input type="password" id="pass" value="Aeonix@9883" autocomplete="current-password"></div>
+  <button class="go" id="signin">Sign in</button>
+  <div class="err" id="loginerr"></div>
+</section>
+
+<!-- ------------------------------------------------------------- library -->
+<section id="lib" class="hidden">
+  <div class="card">
+    <h2>Add garments</h2>
+    <p class="hint">Every garment is read once by the large vision model, which
+      writes its own prompt: what it is, how many pieces it has, how each piece
+      is cut, and how any dupatta is draped. That reading is cached, so a
+      garment already in the library costs nothing to add again. The model
+      needs the card to itself, so this step loads it and the generate step
+      swaps it out.</p>
+    <div class="field"><label for="gfiles">Garment photos (select many)</label>
+      <input type="file" id="gfiles" accept="image/*" multiple></div>
+
+    <div id="cropwrap" class="hidden">
+      <label>Crop each garment &mdash; <b id="cropwhich"></b></label>
+      <p class="hint" style="margin:0 0 10px">Keep every piece inside the box,
+        dupattas included, and leave out as much of the room as you can. This is
+        the one thing that reliably stops the garment photo's room replacing the
+        person's background: the model does not act on being told to ignore a
+        room, but it cannot copy what it was never shown. Cropped once here and
+        reused for every person.</p>
+      <div id="cropstage"><canvas id="cropcanvas"></canvas>
+        <div id="cropbox"><i data-h="nw"></i><i data-h="ne"></i>
+             <i data-h="sw"></i><i data-h="se"></i></div></div>
+      <div style="margin:10px 0">
+        <button class="ghost" id="cropprev">Back</button>
+        <button class="ghost" id="cropnext">Next</button>
+        <button class="ghost" id="cropfull">Use whole image</button>
+      </div>
+    </div>
+
+    <button class="go" id="describe">Describe garments</button>
+    <button class="ghost" id="refresh">Refresh library</button>
+    <div class="bar hidden" id="dbar"><i></i></div>
+    <div class="err" id="liberr"></div>
+  </div>
+  <div class="card">
+    <h2>Library <span id="libcount" class="pill"></span></h2>
+    <p class="hint">Read once, reused for every person.</p>
+    <div class="grid" id="libgrid"></div>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------ generate -->
+<section id="gen" class="hidden">
+  <div class="card">
+    <h2>Choose the person</h2>
+    <p class="hint">The person is read too, so the prompt describes this
+      photograph's own setting, pose and accessories. Nothing about the subject
+      is assumed.</p>
+    <div class="field"><label for="person">Person photo</label>
+      <input type="file" id="person" accept="image/*"></div>
+    <div class="row">
+      <!-- Resolution is fixed at 0.75 MP and the control is hidden rather than
+           deleted, so the value still reaches the request and the choice can be
+           reopened by unhiding this block. 0.75 MP is 768x1024. -->
+      <div class="field hidden"><label for="mp">Resolution</label>
+        <select id="mp">
+          <option value="0.75" selected>0.75 MP &mdash; 768&times;1024</option>
+          <option value="0.5">0.5 MP &mdash; 624&times;832</option>
+          <option value="1.0">1.0 MP &mdash; 896&times;1152</option></select></div>
+      <div class="field"><label for="steps">Steps</label>
+        <select id="steps"><option value="5" selected>5</option>
+          <option value="8">8</option><option value="3">3</option></select></div>
+      <div class="field"><label for="seed">Seed</label>
+        <input type="text" id="seed" value="42"></div>
+    </div>
+    <div class="field"><label>Guardrail</label>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;
+                  background:#0b0d10;border:1px solid var(--line);border-radius:8px">
+        <input type="checkbox" id="guard" style="width:16px;height:16px;
+               accent-color:var(--accent)">
+        <label for="guard" style="margin:0;color:var(--tx);font-size:14px">
+          Inspect each result and reseed on a critical failure</label></div>
+      <p class="hint" style="margin-top:6px">Roughly triples the time per image
+        on this card, because the guardrail shares VRAM with the generator. An
+        unchecked result is reported as unverified, never as a pass.</p></div>
+  </div>
+
+  <div class="card">
+    <h2>Choose garments <span id="selcount" class="pill">0 selected</span></h2>
+    <p class="hint">Click to select. Only described garments can be generated.</p>
+    <div style="margin-bottom:12px">
+      <button class="ghost" id="selall">Select all</button>
+      <button class="ghost" id="selnone">Clear</button>
+    </div>
+    <div class="grid" id="gengrid"></div>
+    <div style="margin-top:16px">
+      <button class="go" id="generate">Generate</button>
+      <div class="bar hidden" id="gbar"><i></i></div>
+      <div class="err" id="generr"></div>
+    </div>
+  </div>
+
+  <div class="card hidden" id="resultcard">
+    <h2>Results <span id="restat" class="pill"></span></h2>
+    <div class="res" id="results"></div>
+  </div>
+</section>
+
+</main>
+
+<div id="lightbox"><img id="lbimg" alt=""><div id="lbcap"></div></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let TOKEN = null, API = null, LIB = [], SEL = new Set();
+
+// Memory only. A token in localStorage outlives the tab it was typed into and
+// is readable by anything that later runs on this origin.
+const authHeaders = () => TOKEN ? {Authorization: "Bearer " + TOKEN} : {};
+
+async function call(path, opts = {}) {
+  const r = await fetch(API + path, {...opts,
+    headers: {...(opts.headers || {}), ...authHeaders()}});
+  if (r.status === 401) { signOut("Session expired."); throw new Error("unauthorised"); }
+  return r;
+}
+
+function signOut(msg) {
+  TOKEN = null;
+  ["lib","gen","tabs"].forEach(i => $(i).classList.add("hidden"));
+  $("login").classList.remove("hidden");
+  $("logout").classList.add("hidden"); $("who").classList.add("hidden");
+  $("loginerr").textContent = msg || "";
+}
+
+$("signin").onclick = async () => {
+  const err = $("loginerr"); err.textContent = "";
+  API = $("api").value.trim().replace(/\/+$/, "");
+  if (!API) { err.textContent = "Enter the API URL."; return; }
+  try {
+    const r = await fetch(API + "/v1/auth/token", {method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({username: $("user").value, password: $("pass").value})});
+    if (!r.ok) { const d = await r.json().catch(() => ({}));
+      err.textContent = d.detail || `Sign-in failed (${r.status}).`; return; }
+    const d = await r.json(); TOKEN = d.token;
+    $("who").textContent = d.username; $("who").classList.remove("hidden");
+    $("logout").classList.remove("hidden"); $("login").classList.add("hidden");
+    $("tabs").classList.remove("hidden"); $("lib").classList.remove("hidden");
+    refreshPhase(); loadLibrary();
+  } catch (e) {
+    err.textContent = "Could not reach the API. Check the URL is reachable.";
+  }
+};
+$("logout").onclick = () => signOut();
+
+// The box may be off, or still starting. Try immediately, then keep retrying
+// quietly rather than showing a dead form - a paused GPU is the normal state
+// between sessions, not an error the user has to interpret.
+async function autoSignIn(attempt = 0) {
+  if ($("api").value && $("user").value && $("pass").value) {
+    try {
+      await $("signin").onclick();
+      if (TOKEN) return;
+    } catch (e) { /* fall through to retry */ }
+  }
+  if (attempt < 40 && !TOKEN) {
+    $("loginerr").style.color = "var(--dim)";
+    $("loginerr").textContent =
+      "Waiting for the GPU box… start it and run bootstrap.sh. Retrying.";
+    setTimeout(() => autoSignIn(attempt + 1), 5000);
+  }
+}
+window.addEventListener("load", () => autoSignIn());
+
+$("tabs").onclick = e => {
+  const t = e.target.dataset.tab; if (!t) return;
+  [...$("tabs").children].forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+  $("lib").classList.toggle("hidden", t !== "lib");
+  $("gen").classList.toggle("hidden", t !== "gen");
+  if (t === "gen") renderGen();
+};
+
+async function refreshPhase() {
+  const el = $("phase");
+  try {
+    const d = await (await call("/v1/phase")).json();
+    el.textContent = `${d.phase}${d.guardrail_model ? " + guardrail" : ""} · `
+      + `${d.allocated_gb}/${d.total_gb} GB`;
+    el.className = "pill ok";
+  } catch { el.textContent = "unreachable"; el.className = "pill bad"; }
+}
+
+// ------------------------------------------------------------------ library
+async function loadLibrary() {
+  try {
+    const d = await (await call("/v1/garments")).json();
+    LIB = d.garments || [];
+    $("libcount").textContent = `${LIB.length} garments`;
+    renderLib(); renderGen();
+  } catch (e) { $("liberr").textContent = e.message; }
+}
+
+function tile(g, selectable) {
+  const el = document.createElement("div");
+  el.className = "tile" + (SEL.has(g.name) ? " sel" : "");
+  const n = (g.pieces || []).length;
+  el.innerHTML =
+    `<img loading="lazy" src="${API}${g.image_url}" alt="">` +
+    `<div class="pcs">${n} piece${n === 1 ? "" : "s"}</div>` +
+    `<div class="tick">✓</div>` +
+    `<div class="meta"><b>${g.name}</b>` +
+    `<span>${g.type || "—"}${g.colours ? " · " + g.colours : ""}</span></div>`;
+  if (selectable) el.onclick = () => {
+    SEL.has(g.name) ? SEL.delete(g.name) : SEL.add(g.name);
+    el.classList.toggle("sel"); updateSel();
+  };
+  return el;
+}
+
+function renderLib() {
+  const grid = $("libgrid"); grid.innerHTML = "";
+  if (!LIB.length) {
+    grid.innerHTML = "<p class='hint'>Nothing yet. Add garment photos above.</p>";
+    return;
+  }
+  LIB.forEach(g => grid.appendChild(tile(g, false)));
+}
+
+function renderGen() {
+  const grid = $("gengrid"); grid.innerHTML = "";
+  const usable = LIB.filter(g => (g.pieces || []).length);
+  if (!usable.length) {
+    grid.innerHTML = "<p class='hint'>No described garments yet — add some in "
+      + "the library tab first.</p>";
+    return;
+  }
+  usable.forEach(g => grid.appendChild(tile(g, true)));
+  updateSel();
+}
+
+const updateSel = () => $("selcount").textContent = `${SEL.size} selected`;
+$("selall").onclick = () => { LIB.forEach(g => (g.pieces || []).length && SEL.add(g.name));
+  renderGen(); };
+$("selnone").onclick = () => { SEL.clear(); renderGen(); };
+$("refresh").onclick = loadLibrary;
+
+// ------------------------------------------------------------- garment crop
+// Cropped in the browser, once, before the garment enters the library. Every
+// person generated afterwards reuses the cropped version.
+let CROPS = [], CI = 0, cimg = null, cbox = {x:0,y:0,w:0,h:0}, cview = {w:0,h:0};
+
+$("gfiles").onchange = e => {
+  const files = [...e.target.files];
+  CROPS = files.map(f => ({file: f, box: null}));
+  CI = 0;
+  if (!files.length) { $("cropwrap").classList.add("hidden"); return; }
+  $("cropwrap").classList.remove("hidden");
+  showCrop();
+};
+
+function showCrop() {
+  const item = CROPS[CI]; if (!item) return;
+  $("cropwhich").textContent = `${CI + 1} of ${CROPS.length}: ${item.file.name}`;
+  const img = new Image();
+  img.onload = () => {
+    cimg = img;
+    const cv = $("cropcanvas");
+    const scale = Math.min(1, 380 / img.width, 500 / img.height);
+    cview = {w: Math.round(img.width * scale), h: Math.round(img.height * scale)};
+    cv.width = cview.w; cv.height = cview.h;
+    cv.getContext("2d").drawImage(img, 0, 0, cview.w, cview.h);
+    cbox = item.box
+      ? {x: item.box.x * cview.w, y: item.box.y * cview.h,
+         w: item.box.w * cview.w, h: item.box.h * cview.h}
+      : {x: cview.w * .10, y: cview.h * .05, w: cview.w * .80, h: cview.h * .92};
+    drawCrop();
+  };
+  img.src = URL.createObjectURL(item.file);
+}
+
+function drawCrop() {
+  const b = $("cropbox");
+  b.style.left = cbox.x + "px"; b.style.top = cbox.y + "px";
+  b.style.width = cbox.w + "px"; b.style.height = cbox.h + "px";
+}
+
+function storeCrop() {
+  if (!CROPS[CI] || !cview.w) return;
+  CROPS[CI].box = {x: cbox.x / cview.w, y: cbox.y / cview.h,
+                   w: cbox.w / cview.w, h: cbox.h / cview.h};
+}
+
+$("cropnext").onclick = () => { storeCrop(); if (CI < CROPS.length - 1) { CI++; showCrop(); } };
+$("cropprev").onclick = () => { storeCrop(); if (CI > 0) { CI--; showCrop(); } };
+$("cropfull").onclick = () => {
+  cbox = {x: 0, y: 0, w: cview.w, h: cview.h}; drawCrop(); storeCrop();
+};
+
+(function cropDrag() {
+  const b = $("cropbox");
+  let mode = null, handle = null, sx = 0, sy = 0, start = null;
+  const clamp = () => {
+    cbox.w = Math.max(40, Math.min(cbox.w, cview.w));
+    cbox.h = Math.max(40, Math.min(cbox.h, cview.h));
+    cbox.x = Math.max(0, Math.min(cbox.x, cview.w - cbox.w));
+    cbox.y = Math.max(0, Math.min(cbox.y, cview.h - cbox.h));
+  };
+  b.addEventListener("pointerdown", e => {
+    mode = e.target.dataset.h ? "resize" : "move";
+    handle = e.target.dataset.h || null;
+    sx = e.clientX; sy = e.clientY; start = {...cbox};
+    b.setPointerCapture(e.pointerId); e.preventDefault();
+  });
+  b.addEventListener("pointermove", e => {
+    if (!mode) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (mode === "move") { cbox.x = start.x + dx; cbox.y = start.y + dy; }
+    else {
+      if (handle.includes("w")) { cbox.x = start.x + dx; cbox.w = start.w - dx; }
+      if (handle.includes("e")) { cbox.w = start.w + dx; }
+      if (handle.includes("n")) { cbox.y = start.y + dy; cbox.h = start.h - dy; }
+      if (handle.includes("s")) { cbox.h = start.h + dy; }
+    }
+    clamp(); drawCrop();
+  });
+  b.addEventListener("pointerup", () => { mode = null; storeCrop(); });
+})();
+
+async function croppedFile(item) {
+  if (!item.box) return item.file;
+  const img = await new Promise(res => {
+    const i = new Image(); i.onload = () => res(i);
+    i.src = URL.createObjectURL(item.file);
+  });
+  const cv = document.createElement("canvas");
+  cv.width = Math.round(item.box.w * img.width);
+  cv.height = Math.round(item.box.h * img.height);
+  cv.getContext("2d").drawImage(img, item.box.x * img.width, item.box.y * img.height,
+    cv.width, cv.height, 0, 0, cv.width, cv.height);
+  const blob = await new Promise(r => cv.toBlob(r, "image/jpeg", 0.95));
+  return new File([blob], item.file.name.replace(/\.[^.]+$/, "") + ".jpg",
+                  {type: "image/jpeg"});
+}
+
+$("describe").onclick = async () => {
+  const files = $("gfiles").files, err = $("liberr"), btn = $("describe");
+  err.textContent = "";
+  if (!files.length) { err.textContent = "Choose one or more garment photos."; return; }
+  storeCrop();
+  const fd = new FormData();
+  for (const item of CROPS) fd.append("files", await croppedFile(item));
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spin"></span>Reading ${files.length} garment(s)…`;
+  $("dbar").classList.remove("hidden");
+  $("dbar").firstElementChild.style.width = "35%";
+  try {
+    const r = await call("/v1/garments", {method: "POST", body: fd});
+    if (!r.ok) { const d = await r.json().catch(() => ({}));
+      throw new Error(d.detail || `failed (${r.status})`); }
+    const d = await r.json();
+    $("dbar").firstElementChild.style.width = "100%";
+    err.style.color = "var(--ok)";
+    err.textContent = `Described ${d.described} of ${d.added} in `
+      + `${d.seconds}s (${d.cached} already known).`;
+    await loadLibrary();
+  } catch (e) { err.style.color = "var(--bad)"; err.textContent = e.message; }
+  finally {
+    btn.disabled = false; btn.textContent = "Describe garments";
+    setTimeout(() => $("dbar").classList.add("hidden"), 900);
+    refreshPhase();
+  }
+};
+
+// ----------------------------------------------------------------- generate
+$("generate").onclick = async () => {
+  const err = $("generr"), btn = $("generate");
+  err.textContent = ""; err.style.color = "var(--bad)";
+  const person = $("person").files[0];
+  if (!person) { err.textContent = "Choose a person photo."; return; }
+  if (!SEL.size) { err.textContent = "Select at least one garment."; return; }
+
+  const fd = new FormData();
+  fd.append("person", person);
+  fd.append("garments", [...SEL].join(","));
+  fd.append("megapixels", $("mp").value);
+  fd.append("steps", $("steps").value);
+  fd.append("seed", $("seed").value || "42");
+  fd.append("guardrail", $("guard").checked ? "true" : "false");
+
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spin"></span>Generating ${SEL.size}…`;
+  $("gbar").classList.remove("hidden"); $("gbar").firstElementChild.style.width = "20%";
+  const t0 = performance.now();
+  try {
+    const r = await call("/v1/generate", {method: "POST", body: fd});
+    if (!r.ok) { const d = await r.json().catch(() => ({}));
+      throw new Error(d.detail || `failed (${r.status})`); }
+    let d = await r.json();
+
+    // Generation runs in the background now, so the first response carries a
+    // batch id and no images. Poll for progress and render results as they
+    // land, rather than showing an empty grid.
+    while (d.stage !== "complete" && d.stage !== "new") {
+      await new Promise(s => setTimeout(s, 1200));
+      d = await (await call("/v1/batch/" + d.batch_id)).json();
+      const done = d.generated || 0, total = d.queued || SEL.size;
+      $("gbar").firstElementChild.style.width =
+        Math.max(8, Math.round((done / Math.max(1, total)) * 100)) + "%";
+      btn.innerHTML = `<span class="spin"></span>${done}/${total}`
+        + (d.current ? ` — ${d.current}` : "")
+        + (d.eta_seconds ? ` · ~${Math.round(d.eta_seconds)}s left` : "");
+      showResults(d, (performance.now() - t0) / 1000);
+    }
+    $("gbar").firstElementChild.style.width = "100%";
+    showResults(d, (performance.now() - t0) / 1000);
+  } catch (e) { err.textContent = e.message; }
+  finally {
+    btn.disabled = false; btn.textContent = "Generate";
+    setTimeout(() => $("gbar").classList.add("hidden"), 900);
+    refreshPhase();
+  }
+};
+
+// Click any result to see it full size. Escape or a click anywhere closes it.
+function openLightbox(src, caption) {
+  $("lbimg").src = src;
+  $("lbcap").innerHTML = caption;
+  $("lightbox").classList.add("on");
+}
+$("lightbox").onclick = () => $("lightbox").classList.remove("on");
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") $("lightbox").classList.remove("on");
+});
+
+function showResults(d, wall) {
+  $("resultcard").classList.remove("hidden");
+  $("restat").textContent = `${d.generated}/${d.garments} in `
+    + `${(d.generate_seconds ?? wall).toFixed(0)}s`;
+  const box = $("results"); box.innerHTML = "";
+  for (const it of d.items) {
+    const r = document.createElement("div"); r.className = "r";
+    // Three states, kept apart: null means never inspected, which is neither a
+    // pass nor a failure, and showing it as either would misreport the result.
+    let v = '<span class="v none">not inspected</span>';
+    if (it.status === "failed") v = `<span class="v fail">${it.error || "failed"}</span>`;
+    else if (it.guardrail_ok === true) v = '<span class="v pass">guardrail passed</span>';
+    else if (it.guardrail_ok === false)
+      v = `<span class="v fail">flagged: ${(it.guardrail_reason || "").slice(0, 60)}</span>`;
+    r.innerHTML =
+      (it.image_url ? `<img loading="lazy" src="${API}${it.image_url}">`
+                    : `<div style="aspect-ratio:3/4;display:flex;align-items:center;
+                        justify-content:center;color:var(--dim);font-size:12px">
+                        no image</div>`) +
+      `<div class="cap"><b>${it.garment}</b> `
+      + `<i>${it.seconds ? it.seconds.toFixed(1) + "s" : ""}`
+      + `${it.attempts > 1 ? " · " + it.attempts + " attempts" : ""}</i><br>${v}</div>`;
+    if (it.image_url) {
+      const img = r.querySelector("img");
+      const src = API + it.image_url;
+      img.onclick = () => openLightbox(src,
+        `<b>${it.garment}</b> &nbsp; ${it.seconds ? it.seconds.toFixed(1) + "s" : ""}`
+        + `${it.attempts > 1 ? " · " + it.attempts + " attempts" : ""}`);
+    }
+    box.appendChild(r);
+  }
+  $("resultcard").scrollIntoView({behavior: "smooth", block: "start"});
+}
+</script>
+</body></html>

@@ -1,0 +1,27 @@
+services:
+  tryon:
+    image: ghcr.io/dhritiman-dasgupta/virtual-tryon:latest
+    # build: .        # uncomment to build locally instead of pulling
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file: [.env]
+    volumes:
+      # ~18 GB generator weights + ~16 GB vision model. Kept outside the image
+      # and outside the container lifecycle so a rebuild does not refetch them.
+      - comfy-models:/opt/ComfyUI/models
+      - hf-cache:/models
+      - ./outputs:/app/outputs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # diffusion needs more than Docker's 64 MB default
+    shm_size: "8gb"
+
+volumes:
+  comfy-models:
+  hf-cache:

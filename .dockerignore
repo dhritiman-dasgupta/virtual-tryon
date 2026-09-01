@@ -1,0 +1,16 @@
+.git
+.github
+docs
+gallery-tools
+notebooks
+tests/runs
+outputs
+data/runs-*
+data/pair-*
+data/source-*
+**/__pycache__
+*.pyc
+.venv
+venv
+.env
+.DS_Store
